@@ -1,9 +1,8 @@
 from langchain_openai import ChatOpenAI
 from langchain_community.chat_models.ollama import ChatOllama
-
-
-
 from enum import Enum
+
+OLLAMA_HOST = "http://172.19.21.52:11434"
 
 class LLMS(Enum):
     QWEN = "qwen:7b"
@@ -17,9 +16,9 @@ class LLMS(Enum):
 def get_llm(model: str | LLMS):
     match model:
         case LLMS.QWEN:
-            llm = ChatOllama(model=LLMS.QWEN.value, base_url="http://172.19.21.52:11434")
+            llm = ChatOllama(model=LLMS.QWEN.value, base_url=OLLAMA_HOST)
         case LLMS.LLAMA3:
-            llm = ChatOllama(model=LLMS.LLAMA3.value, base_url="http://172.19.21.52:11434")
+            llm = ChatOllama(model=LLMS.LLAMA3.value, base_url=OLLAMA_HOST)
         case LLMS.GPT4:
             llm = ChatOpenAI(model_name=LLMS.GPT4.value, openai_api_key="sk-RPLgjF1NQbKh7HWB37Af4957A58546CdBf59E96f6f60F010", base_url="https://openai.sohoyo.io/v1")
         case LLMS.GLM4:
