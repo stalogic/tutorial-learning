@@ -11,10 +11,12 @@ from typing import Any, Dict, Optional, TypedDict
 from langchain_core.runnables import RunnableConfig
 from langchain_core.runnables import RunnablePassthrough
 
-model = get_llm(LLMS.GPT4)
-# query = "what's thirteen times 4.14137281"
-query = "what's 十四 times 4.14137281"
-print(f"Queyr: {query}")
+model = get_llm(LLMS.GLM4)
+print(f"Model: {model}")
+
+query = "what's thirteen times 4.14137281"
+# query = "what's 十四 times 4.14137281"
+print(f"\nQueyr: {query}")
 
 
 class ToolCallRequest(TypedDict):
@@ -71,11 +73,15 @@ Return your response as a JSON blob with 'name' and 'arguments' keys.
 
 The `arguments` should be a dictionary, with keys corresponding 
 to the argument names and the values corresponding to the requested values.
+
+Response with JSON blob Only!!! Do not include any other text.
 """
 
 prompt = ChatPromptTemplate.from_messages(
     [("system", system_prompt), ("user", "{input}")]
 )
+
+print(f"\nSystem Prompt:\n{prompt.messages[0].prompt.template}")
 
 
 chain = prompt | model

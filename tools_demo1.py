@@ -41,4 +41,4 @@ while True:
         messages.append(ToolMessage(tool_output, tool_call_id=tool_call["id"]))
 
 for i, message in enumerate(messages):
-    print(i, [message])
+    print(f"Message {i}:\n{[message]}")
