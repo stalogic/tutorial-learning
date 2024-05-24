@@ -11,7 +11,7 @@ from typing import Any, Dict, Optional, TypedDict
 from langchain_core.runnables import RunnableConfig
 from langchain_core.runnables import RunnablePassthrough
 
-model = get_llm(LLMS.GLM4)
+model = get_llm(LLMS.PHI3)
 print(f"Model: {model}")
 
 query = "what's thirteen times 4.14137281"
