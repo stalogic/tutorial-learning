@@ -1,16 +1,17 @@
 import torch
 import numpy as np
 
-
-prob = np.array([0.1, 0.4, 0.3, 0.2])
-param = torch.tensor(np.zeros(4), dtype=torch.float32, requires_grad=True)
-optimizer = torch.optim.Adam([param], lr=0.01)
-kl_loss = torch.nn.KLDivLoss(reduction='batchmean')
-while True:
+prob = torch.tensor(np.array([0.1, 0.4, 0.3, 0.2]), dtype=torch.float32)
+model = torch.nn.Sequential(
+    torch.nn.Linear(4, 4),
+    torch.nn.Softmax(dim=-1)
+)
+optimizer = torch.optim.SGD(model.parameters(), lr=0.01)
+print(f"{optimizer=}")
+for _ in range(200):
+    pred = model(torch.tensor(np.array([[1, 2, 3, 4]]), dtype=torch.float32))
+    loss = torch.nn.functional.kl_div(pred.log(), prob)
     optimizer.zero_grad()
-    loss = kl_loss(torch.log(torch.tensor(prob)), param)
-    loss.backward()
+    loss.backward(retain_graph=True)
     optimizer.step()
-    print(param.data)
-    if loss.data < 0.01:
-        break
+    print(f"{loss.item()=}, {pred=}, {prob=}")
