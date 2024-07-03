@@ -1,7 +1,8 @@
 import torch
 import numpy as np
 
-prob = torch.tensor(np.array([0.1, 0.4, 0.3, 0.2]), dtype=torch.float32)
+# prob = torch.tensor(np.array([0.1, 0.4, 0.3, 0.2]), dtype=torch.float32)
+prob = torch.tensor(np.array([1, 4, 0.5, 3]), dtype=torch.float32)
 model = torch.nn.Sequential(
     torch.nn.Linear(4, 4),
     torch.nn.Softmax(dim=-1)
