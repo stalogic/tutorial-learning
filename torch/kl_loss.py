@@ -1,17 +1,14 @@
 import torch
 import numpy as np
 
-# prob = torch.tensor(np.array([0.1, 0.4, 0.3, 0.2]), dtype=torch.float32)
-prob = torch.tensor(np.array([1, 4, 0.5, 3]), dtype=torch.float32)
-model = torch.nn.Sequential(
-    torch.nn.Linear(4, 4),
-    torch.nn.Softmax(dim=-1)
-)
-optimizer = torch.optim.SGD(model.parameters(), lr=0.01)
-print(f"{optimizer=}")
-for _ in range(200):
-    pred = model(torch.tensor(np.array([[1, 2, 3, 4]]), dtype=torch.float32))
-    loss = torch.nn.functional.kl_div(pred.log(), prob)
+prob = torch.tensor(np.array([[1, 4, 5, 3]]), dtype=torch.float32)
+model = torch.nn.Linear(4, 4)
+optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
+for _ in range(50):
+    logit = model(torch.tensor(np.array([[1, 2, 3, 4]]), dtype=torch.float32))
+    pred = torch.nn.functional.softmax(logit, dim=-1)
+    # loss = torch.nn.functional.kl_div(pred.log(), prob)
+    loss = torch.nn.functional.cross_entropy(logit, prob)
     optimizer.zero_grad()
     loss.backward(retain_graph=True)
     optimizer.step()
