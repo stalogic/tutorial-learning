@@ -1,5 +1,5 @@
 from enum import Enum
-
+from collections import namedtuple
 
 # class Action(Enum):
 #     MOVE_A = (0, (0, 0))
@@ -25,16 +25,20 @@ from enum import Enum
 
 
 
-class Action(object):
-    __match_args__ = ('x', 'y')
-    def __init__(self, x, y):
-        self.x = x
-        self.y = y
+# class Action(object):
+#     __match_args__ = ('x', 'y')
+#     def __init__(self, x, y):
+#         self.x = x
+#         self.y = y
+
+# class MacroAction(object):
+#     class MOVE_A(Action): pass
+#     class MOVE_B(Action): pass
+
 
 class MacroAction(object):
-    class MOVE_A(Action): pass
-    class MOVE_B(Action): pass
-
+    class MOVE_A(namedtuple('P', 'x y')): pass
+    class MOVE_B(namedtuple('P', 'x y')): pass
 
 
 def main():
