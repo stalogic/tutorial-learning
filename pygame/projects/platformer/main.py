@@ -73,6 +73,7 @@ class World(object):
     def draw(self):
         for tile in self.tile_list:
             screen.blit(tile[0], tile[1])
+            pygame.draw.rect(screen, (255, 255, 255), tile[1], 2)
 
 class Player(object):
     def __init__(self, x, y):
@@ -103,11 +104,11 @@ class Player(object):
         if (key[pygame.K_w] or key[pygame.K_SPACE]):
             self.jumped = False
         if key[pygame.K_a]:
-            dx -= 5
+            dx -= 7
             self.counter += 1
             self.direction = -1
         elif key[pygame.K_d]:
-            dx += 5
+            dx += 7
             self.counter += 1
             self.direction = 1
 
@@ -137,6 +138,20 @@ class Player(object):
         if self.vel_y > 10:
             self.vel_y = 10
 
+        for tile in world.tile_list:
+            if tile[1].colliderect(self.rect.x, self.rect.y + dy, self.rect.width, self.rect.height):
+                if self.vel_y < 0:
+                    self.vel_y = 0
+                    dy = tile[1].bottom - self.rect.top
+                else:
+                    self.vel_y = 0
+                    dy = tile[1].top - self.rect.bottom
+            if tile[1].colliderect(self.rect.x + dx, self.rect.y, self.rect.width, self.rect.height):
+                if self.direction == 1:
+                    dx = tile[1].left - self.rect.right
+                elif self.direction == -1:
+                    dx = tile[1].right - self.rect.left
+
         self.rect.x += dx
         self.rect.y += dy
 
@@ -144,6 +159,7 @@ class Player(object):
             self.rect.bottom = SCREEN_HEIGHT
 
         screen.blit(self.image, self.rect)
+        pygame.draw.rect(screen, (255, 255, 255), self.rect, 2)
 
 
 world = World(world_data)
