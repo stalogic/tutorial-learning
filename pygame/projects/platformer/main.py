@@ -3,7 +3,11 @@ import pickle
 import random
 from pathlib import Path
 from pygame.locals import *
+from pygame import mixer
 
+
+pygame.mixer.pre_init(44100, -16, 2, 512)
+mixer.init()
 pygame.init()
 
 clock = pygame.time.Clock()
@@ -34,6 +38,16 @@ bg_img = pygame.image.load("img/sky.png")
 restart_img = pygame.image.load('img/restart_btn.png')
 start_img = pygame.image.load('img/start_btn.png')
 exit_img = pygame.image.load('img/exit_btn.png')
+
+
+pygame.mixer.music.load('img/music.wav')
+pygame.mixer.music.play(-1, 0.0, 5000)
+coin_fx = pygame.mixer.Sound('img/coin.wav')
+coin_fx.set_volume(0.5)
+jump_fx = pygame.mixer.Sound('img/jump.wav')
+jump_fx.set_volume(0.5)
+game_over_fx = pygame.mixer.Sound('img/game_over.wav')
+game_over_fx.set_volume(0.5)
 
 class Button():
     def __init__(self, x, y, image):
@@ -145,6 +159,7 @@ class Player(object):
             dx, dy = 0, 0
             key = pygame.key.get_pressed()
             if (key[pygame.K_w] or key[pygame.K_SPACE]) and not self.jumped and not self.in_air:
+                jump_fx.play()
                 self.vel_y = -15
                 self.jumped = True
             if (key[pygame.K_w] or key[pygame.K_SPACE]):
@@ -201,9 +216,11 @@ class Player(object):
                         dx = tile[1].right - self.rect.left
 
             if pygame.sprite.spritecollide(player, lava_group, False):
+                game_over_fx.play()
                 game_over = -1
             
             if pygame.sprite.spritecollide(player, blob_group, False):
+                game_over_fx.play()
                 game_over = -1
 
             if pygame.sprite.spritecollide(player, exit_group, False):
@@ -318,6 +335,7 @@ while running:
             blob_group.update()
 
             if pygame.sprite.spritecollide(player, coin_group, True):
+                coin_fx.play()
                 score += 1
             draw_text(f"X {score}", FONT_SCORE, WHITE, TILE_SIZE+20, 25)
 
