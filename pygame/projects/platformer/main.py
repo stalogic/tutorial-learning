@@ -12,14 +12,22 @@ SCREEN_WIDTH = 1000
 SCREEN_HEIGHT = 1000
 TILE_SIZE = 50
 FPS = 60
-MAX_LEVEL = 2
+MAX_LEVEL = 3
+FONT = pygame.font.SysFont('Bauhaus 93', 70)
+FONT_SCORE = pygame.font.SysFont('Bauhaus 93', 50)
+WHITE = (255, 255, 255)
+BLUE = (0, 0, 255)
+RED = (255, 0, 0)
+
 
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption('Platformer')
 
 game_over = 0
 main_menu = True
-level = 0
+level = 1
+score = 0
+
 
 sun_img = pygame.image.load('img/sun.png')
 bg_img = pygame.image.load("img/sky.png")
@@ -50,6 +58,11 @@ class Button():
         screen.blit(self.image, self.rect)
         return action
 
+
+def draw_text(text, font, text_col, x, y):
+    text = font.render(text, True, text_col)
+    text_rect = text.get_rect(center=(x, y))
+    screen.blit(text, text_rect)
 
 def draw_grid():
     for line in range(21):
@@ -86,6 +99,9 @@ class World(object):
                     case 6:
                         lava = Lava(j * TILE_SIZE, i * TILE_SIZE + (TILE_SIZE // 2))
                         lava_group.add(lava)
+                    case 7:
+                        coin = Coin(j * TILE_SIZE + (TILE_SIZE // 2), i * TILE_SIZE - (TILE_SIZE // 2))
+                        coin_group.add(coin)
                     case 8:
                         exit = Exit(j * TILE_SIZE, i * TILE_SIZE - (TILE_SIZE // 2))
                         exit_group.add(exit)
@@ -243,18 +259,31 @@ class Exit(pygame.sprite.Sprite):
         self.rect.x = x
         self.rect.y = y
     
+class Coin(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        pygame.sprite.Sprite.__init__(self)
+        img = pygame.image.load('img/coin.png')
+        self.image = pygame.transform.scale(img, (TILE_SIZE // 2, TILE_SIZE // 2))
+        self.rect = self.image.get_rect()
+        self.rect.center = (x, y)
+    
 
 
 player = Player(100, SCREEN_HEIGHT - 130)
 blob_group = pygame.sprite.Group()
 lava_group = pygame.sprite.Group()
 exit_group = pygame.sprite.Group()
+coin_group = pygame.sprite.Group()
+
 
 def reset_level(level):
     player.reset(100, SCREEN_HEIGHT - 130)
     blob_group.empty()
     lava_group.empty()
     exit_group.empty()
+    coin_group.empty()
+    score_coin = Coin(TILE_SIZE // 2, TILE_SIZE // 2)
+    coin_group.add(score_coin)
 
     file_path = Path(f'world_data/level{level}_data')
     if file_path.exists():
@@ -263,7 +292,7 @@ def reset_level(level):
     world = World(world_data)
     return world
 
-world = reset_level(0)
+world = reset_level(level)
 restart_button = Button(SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT // 2 + 100, restart_img)
 start_button = Button(SCREEN_WIDTH // 2 - 350, SCREEN_HEIGHT // 2, start_img)
 exit_button = Button(SCREEN_WIDTH // 2 + 150, SCREEN_HEIGHT // 2, exit_img)
@@ -288,24 +317,33 @@ while running:
         if game_over == 0:
             blob_group.update()
 
+            if pygame.sprite.spritecollide(player, coin_group, True):
+                score += 1
+            draw_text(f"X {score}", FONT_SCORE, WHITE, TILE_SIZE+20, 25)
+
         blob_group.draw(screen)
         lava_group.draw(screen)
         exit_group.draw(screen)
+        coin_group.draw(screen)
         game_over = player.update(game_over)
 
         if game_over == -1:
+            draw_text("GAME OVER", FONT, RED, SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2)
             if restart_button.draw():
                 world = reset_level(level)
                 game_over = 0
+                score = 0
         elif game_over == 1:
             level += 1
             if level < MAX_LEVEL:
                 world = reset_level(level)
                 game_over = 0
             else:
-                level = 0
-                world = reset_level(level)
-                game_over = 0
+                draw_text("YOU WIN!", FONT, BLUE, SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2)
+                if restart_button.draw():
+                    level = 1
+                    world = reset_level(level)
+                    game_over = 0
 
     for event in pygame.event.get():
         if event.type == QUIT:
