@@ -19,6 +19,30 @@ game_over = 0
 
 sun_img = pygame.image.load('img/sun.png')
 bg_img = pygame.image.load("img/sky.png")
+restart_img = pygame.image.load('img/restart_btn.png')
+
+class Button():
+    def __init__(self, x, y, image):
+        self.image = image
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+        self.clicked = False
+        
+
+    def draw(self):
+        action = False
+        pos = pygame.mouse.get_pos()
+        if self.rect.collidepoint(pos):
+            if pygame.mouse.get_pressed()[0] == 1 and self.clicked == False:
+                action = True
+                self.clicked = True
+        
+        if pygame.mouse.get_pressed()[0] == 0:
+            self.clicked = False
+
+        screen.blit(self.image, self.rect)
+        return action
 
 
 def draw_grid():
@@ -38,7 +62,7 @@ world_data = [
 [1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], 
 [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 7, 0, 0, 0, 0, 1], 
 [1, 0, 2, 0, 0, 7, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], 
-[1, 0, 0, 2, 0, 0, 4, 0, 0, 0, 0, 3, 0, 0, 3, 0, 0, 0, 0, 1], 
+[1, 0, 0, 2, 2, 0, 4, 0, 0, 0, 0, 3, 0, 0, 3, 0, 0, 0, 0, 1], 
 [1, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 1], 
 [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], 
 [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 7, 0, 0, 0, 0, 2, 0, 1], 
@@ -87,10 +111,13 @@ class World(object):
     def draw(self):
         for tile in self.tile_list:
             screen.blit(tile[0], tile[1])
-            pygame.draw.rect(screen, (255, 255, 255), tile[1], 2)
+            # pygame.draw.rect(screen, (255, 255, 255), tile[1], 2)
 
 class Player(object):
     def __init__(self, x, y):
+        self.reset(x, y)
+
+    def reset(self, x, y):
         self.images_right = []
         self.images_left = []
         self.index = 0
@@ -109,12 +136,13 @@ class Player(object):
         self.vel_y = 0
         self.jumped = False
         self.direction = 0
+        self.in_air = True
 
     def update(self, game_over):
         if game_over == 0:
             dx, dy = 0, 0
             key = pygame.key.get_pressed()
-            if (key[pygame.K_w] or key[pygame.K_SPACE]) and not self.jumped:
+            if (key[pygame.K_w] or key[pygame.K_SPACE]) and not self.jumped and not self.in_air:
                 self.vel_y = -15
                 self.jumped = True
             if (key[pygame.K_w] or key[pygame.K_SPACE]):
@@ -153,7 +181,8 @@ class Player(object):
             self.vel_y += 1
             if self.vel_y > 10:
                 self.vel_y = 10
-
+    
+            self.in_air = True
             for tile in world.tile_list:
                 if tile[1].colliderect(self.rect.x, self.rect.y + dy, self.rect.width, self.rect.height):
                     if self.vel_y < 0:
@@ -162,6 +191,7 @@ class Player(object):
                     else:
                         self.vel_y = 0
                         dy = tile[1].top - self.rect.bottom
+                        self.in_air = False
                 if tile[1].colliderect(self.rect.x + dx, self.rect.y, self.rect.width, self.rect.height):
                     if self.direction == 1:
                         dx = tile[1].left - self.rect.right
@@ -185,7 +215,7 @@ class Player(object):
             if self.rect.y >= 100:
                 self.rect.y -= 5
         screen.blit(self.image, self.rect)
-        pygame.draw.rect(screen, (255, 255, 255), self.rect, 2)
+        # pygame.draw.rect(screen, (255, 255, 255), self.rect, 2)
         return game_over
 
 
@@ -222,6 +252,7 @@ lava_group = pygame.sprite.Group()
 world = World(world_data)
 player = Player(100, SCREEN_HEIGHT - 130)
 
+restart_button = Button(SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT // 2 + 100, restart_img)
 
 running = True
 
@@ -233,9 +264,15 @@ while running:
     world.draw()
     if game_over == 0:
         blob_group.update()
+
     blob_group.draw(screen)
     lava_group.draw(screen)
     game_over = player.update(game_over)
+
+    if game_over == -1:
+        if restart_button.draw():
+            game_over = 0
+            player.reset(100, SCREEN_HEIGHT - 130)
     for event in pygame.event.get():
         if event.type == QUIT:
             running = False
