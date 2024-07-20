@@ -1,4 +1,5 @@
 import pygame
+import random
 from pygame.locals import *
 
 pygame.init()
@@ -58,17 +59,26 @@ class World(object):
 
         for i, row in enumerate(data):
             for j, tile in enumerate(row):
-                if tile == 1:
-                    img = pygame.transform.scale(dirt_img, (TILE_SIZE, TILE_SIZE))
-                elif tile == 2:
-                    img = pygame.transform.scale(grass_img, (TILE_SIZE, TILE_SIZE))
-                else:
-                    continue
+                match tile:
+                    case 1:
+                        img = pygame.transform.scale(dirt_img, (TILE_SIZE, TILE_SIZE))
+                        img_rect = img.get_rect()
+                        img_rect.x = j * TILE_SIZE
+                        img_rect.y = i * TILE_SIZE
+                        self.tile_list.append((img, img_rect))
+                    case 2:
+                        img = pygame.transform.scale(grass_img, (TILE_SIZE, TILE_SIZE))
+                        img_rect = img.get_rect()
+                        img_rect.x = j * TILE_SIZE
+                        img_rect.y = i * TILE_SIZE
+                        self.tile_list.append((img, img_rect))
+                    case 3:
+                        blob = Enemy(j * TILE_SIZE, i * TILE_SIZE + 16)
+                        blob_group.add(blob)
+                    case _:
+                        continue
 
-                img_rect = img.get_rect()
-                img_rect.x = j * TILE_SIZE
-                img_rect.y = i * TILE_SIZE
-                self.tile_list.append((img, img_rect))
+                
 
     def draw(self):
         for tile in self.tile_list:
@@ -162,8 +172,28 @@ class Player(object):
         pygame.draw.rect(screen, (255, 255, 255), self.rect, 2)
 
 
+class Enemy(pygame.sprite.Sprite):
+    def __init__(self, x, y) -> None:
+        pygame.sprite.Sprite.__init__(self)
+        self.image = pygame.image.load('img/blob.png')
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+        self.move_direction = 1 if random.random() > 0.5 else -1
+        self.move_counter = random.randint(-10, 10)
+
+    def update(self):
+        self.rect.x += self.move_direction
+        self.move_counter += 1
+        if abs(self.move_counter) > 50:
+            self.move_direction *= -1
+            self.move_counter *= -1
+
+
+blob_group = pygame.sprite.Group()
 world = World(world_data)
 player = Player(100, SCREEN_HEIGHT - 130)
+
 
 running = True
 
@@ -172,8 +202,9 @@ while running:
 
     screen.blit(bg_img, (0, 0))
     screen.blit(sun_img, (100, 100))
-    
     world.draw()
+    blob_group.update()
+    blob_group.draw(screen)
     player.update()
     # draw_grid()
     for event in pygame.event.get():
