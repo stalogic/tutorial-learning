@@ -15,11 +15,14 @@ screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption('Platformer')
 
 game_over = 0
+main_menu = True
 
 
 sun_img = pygame.image.load('img/sun.png')
 bg_img = pygame.image.load("img/sky.png")
 restart_img = pygame.image.load('img/restart_btn.png')
+start_img = pygame.image.load('img/start_btn.png')
+exit_img = pygame.image.load('img/exit_btn.png')
 
 class Button():
     def __init__(self, x, y, image):
@@ -253,6 +256,8 @@ world = World(world_data)
 player = Player(100, SCREEN_HEIGHT - 130)
 
 restart_button = Button(SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT // 2 + 100, restart_img)
+start_button = Button(SCREEN_WIDTH // 2 - 350, SCREEN_HEIGHT // 2, start_img)
+exit_button = Button(SCREEN_WIDTH // 2 + 150, SCREEN_HEIGHT // 2, exit_img)
 
 running = True
 
@@ -261,18 +266,28 @@ while running:
 
     screen.blit(bg_img, (0, 0))
     screen.blit(sun_img, (100, 100))
-    world.draw()
-    if game_over == 0:
-        blob_group.update()
 
-    blob_group.draw(screen)
-    lava_group.draw(screen)
-    game_over = player.update(game_over)
+    if main_menu:
+        if start_button.draw():
+            main_menu = False
+        if exit_button.draw():
+            running = False
+    
+    else:   
+        world.draw()
 
-    if game_over == -1:
-        if restart_button.draw():
-            game_over = 0
-            player.reset(100, SCREEN_HEIGHT - 130)
+        if game_over == 0:
+            blob_group.update()
+
+        blob_group.draw(screen)
+        lava_group.draw(screen)
+        game_over = player.update(game_over)
+
+        if game_over == -1:
+            if restart_button.draw():
+                game_over = 0
+                player.reset(100, SCREEN_HEIGHT - 130)
+
     for event in pygame.event.get():
         if event.type == QUIT:
             running = False
