@@ -162,6 +162,8 @@ class Player(object):
     def update(self, game_over):
         if game_over == 0:
             dx, dy = 0, 0
+            col_thresh = 20
+
             key = pygame.key.get_pressed()
             if (key[pygame.K_w] or key[pygame.K_SPACE]) and not self.jumped and not self.in_air:
                 jump_fx.play()
@@ -231,6 +233,26 @@ class Player(object):
             if pygame.sprite.spritecollide(player, exit_group, False):
                 game_over = 1
 
+            # Platforms collision check
+            for platform in platform_group:
+                # collision in the x direction
+                if platform.rect.colliderect(self.rect.x + dx, self.rect.y, self.rect.width, self.rect.height):
+                    dx = 0
+                # collision in the y direction
+                if platform.rect.colliderect(self.rect.x, self.rect.y + dy, self.rect.width, self.rect.height):
+                    # check if below the platform
+                    if abs((self.rect.top + dy) - platform.rect.bottom) < col_thresh:
+                        self.vel_y = 0
+                        dy = platform.rect.bottom - self.rect.top
+                    # check if above the platform
+                    elif abs((self.rect.bottom + dy) - platform.rect.top) < col_thresh:
+                        self.rect.bottom = platform.rect.top - 1
+                        self.in_air = False
+                        dy = 0
+                    # move sideways with the platform
+                    if platform.move_x != 0:
+                        self.rect.x += platform.move_direction
+                    
             self.rect.x += dx
             self.rect.y += dy
 
