@@ -16,7 +16,7 @@ SCREEN_WIDTH = 1000
 SCREEN_HEIGHT = 1000
 TILE_SIZE = 50
 FPS = 60
-MAX_LEVEL = 3
+MAX_LEVEL = 8
 FONT = pygame.font.SysFont('Bauhaus 93', 70)
 FONT_SCORE = pygame.font.SysFont('Bauhaus 93', 50)
 WHITE = (255, 255, 255)
@@ -29,7 +29,7 @@ pygame.display.set_caption('Platformer')
 
 game_over = 0
 main_menu = True
-level = 1
+level = 3
 score = 0
 
 
@@ -109,7 +109,12 @@ class World(object):
                     case 3:
                         blob = Enemy(j * TILE_SIZE, i * TILE_SIZE + 16)
                         blob_group.add(blob)
-
+                    case 4:
+                        platform = Platform(j * TILE_SIZE, i * TILE_SIZE, 1, 0)
+                        platform_group.add(platform)
+                    case 5:
+                        platform = Platform(j * TILE_SIZE, i * TILE_SIZE, 0, 1)
+                        platform_group.add(platform)
                     case 6:
                         lava = Lava(j * TILE_SIZE, i * TILE_SIZE + (TILE_SIZE // 2))
                         lava_group.add(lava)
@@ -240,7 +245,6 @@ class Player(object):
         # pygame.draw.rect(screen, (255, 255, 255), self.rect, 2)
         return game_over
 
-
 class Enemy(pygame.sprite.Sprite):
     def __init__(self, x, y) -> None:
         pygame.sprite.Sprite.__init__(self)
@@ -266,7 +270,28 @@ class Lava(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
-    
+
+class Platform(pygame.sprite.Sprite):
+    def __init__(self, x, y, move_x, move_y):
+        pygame.sprite.Sprite.__init__(self)
+        img = pygame.image.load('img/platform.png')
+        self.image = pygame.transform.scale(img, (TILE_SIZE, TILE_SIZE // 2))
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+        self.move_counter = 0
+        self.move_direction = 1 if random.random() > 0.5 else -1
+        self.move_x = move_x
+        self.move_y = move_y
+
+    def update(self):
+        self.rect.x += self.move_direction * self.move_x
+        self.rect.y += self.move_direction * self.move_y
+        self.move_counter += 1
+        if abs(self.move_counter) > 50:
+            self.move_direction *= -1
+            self.move_counter *= -1
+
 class Exit(pygame.sprite.Sprite):
     def __init__(self, x, y):
         pygame.sprite.Sprite.__init__(self)
@@ -288,6 +313,7 @@ class Coin(pygame.sprite.Sprite):
 
 player = Player(100, SCREEN_HEIGHT - 130)
 blob_group = pygame.sprite.Group()
+platform_group = pygame.sprite.Group()
 lava_group = pygame.sprite.Group()
 exit_group = pygame.sprite.Group()
 coin_group = pygame.sprite.Group()
@@ -296,6 +322,7 @@ coin_group = pygame.sprite.Group()
 def reset_level(level):
     player.reset(100, SCREEN_HEIGHT - 130)
     blob_group.empty()
+    platform_group.empty()
     lava_group.empty()
     exit_group.empty()
     coin_group.empty()
@@ -333,6 +360,7 @@ while running:
 
         if game_over == 0:
             blob_group.update()
+            platform_group.update()
 
             if pygame.sprite.spritecollide(player, coin_group, True):
                 coin_fx.play()
@@ -340,6 +368,7 @@ while running:
             draw_text(f"X {score}", FONT_SCORE, WHITE, TILE_SIZE+20, 25)
 
         blob_group.draw(screen)
+        platform_group.draw(screen)
         lava_group.draw(screen)
         exit_group.draw(screen)
         coin_group.draw(screen)
