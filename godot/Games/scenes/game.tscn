@@ -1,9 +1,10 @@
-[gd_scene load_steps=13 format=3 uid="uid://d0bmok88w86ms"]
+[gd_scene load_steps=15 format=3 uid="uid://d0bmok88w86ms"]
 
 [ext_resource type="PackedScene" uid="uid://b6kcmpujxydl7" path="res://scenes/player.tscn" id="1_0mqoa"]
 [ext_resource type="Texture2D" uid="uid://btp0c64j7ruqk" path="res://assets/sprites/world_tileset.png" id="2_kcqw5"]
 [ext_resource type="PackedScene" uid="uid://cpkkham1m5pxh" path="res://scenes/platform.tscn" id="3_jp5a3"]
 [ext_resource type="PackedScene" uid="uid://d4d435vr5l3ik" path="res://scenes/coin.tscn" id="4_6eq2a"]
+[ext_resource type="PackedScene" uid="uid://8bio7ubeduxb" path="res://scenes/killzone.tscn" id="5_ofk0u"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_wh1o1"]
 texture = ExtResource("2_kcqw5")
@@ -407,6 +408,21 @@ texture = ExtResource("2_kcqw5")
 physics_layer_0/collision_layer = 1
 sources/0 = SubResource("TileSetAtlasSource_wh1o1")
 
+[sub_resource type="Animation" id="Animation_sucvr"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(430, 39)]
+}
+
 [sub_resource type="Animation" id="Animation_6vqhm"]
 resource_name = "move"
 length = 1.5
@@ -424,7 +440,13 @@ tracks/0/keys = {
 "values": [Vector2(430, 39), Vector2(536, 39)]
 }
 
-[sub_resource type="Animation" id="Animation_sucvr"]
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_xrv4x"]
+_data = {
+"RESET": SubResource("Animation_sucvr"),
+"move": SubResource("Animation_6vqhm")
+}
+
+[sub_resource type="Animation" id="Animation_3nwnq"]
 length = 0.001
 tracks/0/type = "value"
 tracks/0/imported = false
@@ -436,13 +458,7 @@ tracks/0/keys = {
 "times": PackedFloat32Array(0),
 "transitions": PackedFloat32Array(1),
 "update": 0,
-"values": [Vector2(430, 39)]
-}
-
-[sub_resource type="AnimationLibrary" id="AnimationLibrary_xrv4x"]
-_data = {
-"RESET": SubResource("Animation_sucvr"),
-"move": SubResource("Animation_6vqhm")
+"values": [Vector2(306, 70)]
 }
 
 [sub_resource type="Animation" id="Animation_llr45"]
@@ -462,26 +478,13 @@ tracks/0/keys = {
 "values": [Vector2(306, 70), Vector2(306, 127), Vector2(686, 127), Vector2(686, 27)]
 }
 
-[sub_resource type="Animation" id="Animation_3nwnq"]
-length = 0.001
-tracks/0/type = "value"
-tracks/0/imported = false
-tracks/0/enabled = true
-tracks/0/path = NodePath(".:position")
-tracks/0/interp = 1
-tracks/0/loop_wrap = true
-tracks/0/keys = {
-"times": PackedFloat32Array(0),
-"transitions": PackedFloat32Array(1),
-"update": 0,
-"values": [Vector2(306, 70)]
-}
-
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_jsgyf"]
 _data = {
 "RESET": SubResource("Animation_3nwnq"),
 "move": SubResource("Animation_llr45")
 }
+
+[sub_resource type="WorldBoundaryShape2D" id="WorldBoundaryShape2D_8v2v2"]
 
 [node name="Game" type="Node2D"]
 
@@ -497,6 +500,8 @@ position = Vector2(45, 39)
 [node name="Camera2D" type="Camera2D" parent="Player"]
 position = Vector2(1, -5)
 zoom = Vector2(4, 4)
+limit_bottom = 140
+limit_smoothed = true
 position_smoothing_enabled = true
 
 [node name="Platform" parent="." instance=ExtResource("3_jp5a3")]
@@ -540,3 +545,9 @@ position = Vector2(583, 25)
 
 [node name="Coin7" parent="." instance=ExtResource("4_6eq2a")]
 position = Vector2(452, 39)
+
+[node name="Killzone" parent="." instance=ExtResource("5_ofk0u")]
+position = Vector2(142, 134)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Killzone"]
+shape = SubResource("WorldBoundaryShape2D_8v2v2")
