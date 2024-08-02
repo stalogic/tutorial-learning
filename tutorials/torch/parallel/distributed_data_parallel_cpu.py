@@ -9,6 +9,8 @@ import torch.multiprocessing as mp
 
 from torch.nn.parallel import DistributedDataParallel as DDP
 
+NUM_EPOCHS = 100000
+
 
 def setup(rank, world_size):
     os.environ['MASTER_ADDR'] = 'localhost'
@@ -34,17 +36,18 @@ def demo_basic(rank, world_size):
     print(f"Running basic DDP example on rank {rank}.")
     setup(rank, world_size)
 
-    model = ToyModel().to(rank)
-    ddp_model = DDP(model, device_ids=[rank])
+    model = ToyModel().to(f"cpu:{rank}")
+    # ddp_model = DDP(model, device_ids=[rank])
+    ddp_model = DDP(model, device_ids=None)
 
     loss_fn = nn.MSELoss()
     optimizer = optim.SGD(ddp_model.parameters(), lr=0.001)
-
-    optimizer.zero_grad()
-    outputs = ddp_model(torch.randn(20, 10))
-    labels = torch.randn(20, 5).to(rank)
-    loss_fn(outputs, labels).backward()
-    optimizer.step()
+    for _ in range(NUM_EPOCHS//world_size + 1):
+        optimizer.zero_grad()
+        outputs = ddp_model(torch.randn(20, 10))
+        labels = torch.randn(20, 5).to(f"cpu:{rank}")
+        loss_fn(outputs, labels).backward()
+        optimizer.step()
 
     cleanup()
 
@@ -57,7 +60,7 @@ def demo_checkpoint(rank, world_size):
     setup(rank, world_size)
 
     model = ToyModel().to(rank)
-    ddp_model = DDP(model, device_ids=[rank])
+    ddp_model = DDP(model, device_ids=None)
 
     CHECKPOINT_PATH = tempfile.gettempdir() + "/model.checkpoint"
     if rank == 0:
@@ -65,8 +68,9 @@ def demo_checkpoint(rank, world_size):
 
     dist.barrier()
 
-    map_location = {'cuda:%d' % 0: 'cuda:%d' % rank}
-    ddp_model.load_state_dict(torch.load(CHECKPOINT_PATH, map_location=map_location))
+    # map_location = {'cuda:%d' % 0: 'cuda:%d' % rank}
+    # ddp_model.load_state_dict(torch.load(CHECKPOINT_PATH, map_location=map_location))
+    ddp_model.load_state_dict(torch.load(CHECKPOINT_PATH))
 
     loss_fn = nn.MSELoss()
     optimizer = optim.SGD(ddp_model.parameters(), lr=0.001)
@@ -119,11 +123,29 @@ def demo_model_parallel(rank, world_size):
 
     cleanup()
 
+
+def demo_default():
+
+    model = ToyModel().to("cpu")
+
+    loss_fn = nn.MSELoss()
+    optimizer = optim.SGD(model.parameters(), lr=0.001)
+
+    for i in range(NUM_EPOCHS):
+        optimizer.zero_grad()
+        outputs = model(torch.randn(20, 10))
+        labels = torch.randn(20, 5).to("cpu")
+        loss_fn(outputs, labels).backward()
+        optimizer.step()
+
+
+
+
 if __name__ == "__main__":
-    n_gpus = torch.cuda.device_count()
-    assert n_gpus >= 2, f"Requires at least 2 GPUs to run, but got {n_gpus}"
-    world_size = n_gpus
+    world_size = 8
     run_demo(demo_basic, world_size)
-    run_demo(demo_checkpoint, world_size)
-    world_size = n_gpus // 2
-    run_demo(demo_model_parallel, world_size)
+    # run_demo(demo_checkpoint, world_size)
+    # world_size = n_gpus // 2
+    # run_demo(demo_model_parallel, world_size)
+
+    demo_default()
