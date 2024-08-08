@@ -16,5 +16,5 @@ func _process(_delta: float) -> void:
 	if action is MovementAction:
 		player_grid_pos += action.offset
 		player.position = Grid.grid_to_world(player_grid_pos)
-	else:
+	elif action is EscapeAction:
 		get_tree().quit()
