@@ -1,20 +1,28 @@
+class_name Game
 extends Node2D
 
-var player_grid_pos := Vector2i.ZERO
-@onready var player: Sprite2D = $Player
+const player_definition: EntityDefinition = preload("res://src/Assets/Definnitions/Entities/Actors/entity_definition_player.tres")
+
+@onready var player: Entity
 @onready var event_handler: EventHandler = $EventHandler
+@onready var entities: Node2D = $Entities
+@onready var map: Map = $Map
+
 
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	pass # Replace with function body.
+	var player_start_pos: Vector2i = Grid.world_to_grid(get_viewport_rect().size.floor() / 2)
+	player = Entity.new(player_start_pos, player_definition)
+	entities.add_child(player)
+	var npc := Entity.new(player_start_pos + Vector2i.RIGHT, player_definition)
+	npc.modulate = Color.ORANGE_RED
+	entities.add_child(npc)
 
+func _physics_process(_delta: float) -> void:
+	var action: Action = event_handler.get_action()
+	if action:
+		action.perform(self, player)
 
-# Called every frame. 'delta' is the elapsed time since the previous frame.
-func _process(_delta: float) -> void:
-	var action = event_handler.get_action()
-	if action is MovementAction:
-		player_grid_pos += action.offset
-		player.position = Grid.grid_to_world(player_grid_pos)
-	elif action is EscapeAction:
-		get_tree().quit()
+func get_map_data() -> MapData:
+	return map.map_data

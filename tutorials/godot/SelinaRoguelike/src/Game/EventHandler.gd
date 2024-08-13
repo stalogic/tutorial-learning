@@ -3,7 +3,7 @@ extends Node
 
 func get_action() -> Action:
 	var action: Action = null
-	
+
 	if Input.is_action_just_pressed("ui_up"):
 		action = MovementAction.new(0, -1)
 	elif Input.is_action_just_pressed("ui_down"):
