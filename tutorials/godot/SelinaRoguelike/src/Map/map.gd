@@ -1,14 +1,12 @@
 class_name Map
 extends Node2D
 
-@export var map_width: int = 80
-@export var map_height: int = 45
+@onready var dungeon_generator = $DungeonGenerator
 
 var map_data: MapData
 
-# Called when the node enters the scene tree for the first time.
-func _ready():
-	map_data = MapData.new(map_width, map_height)
+func generate(player: Entity):
+	map_data = dungeon_generator.generate_dungeon(player)
 	_replace_tiles()
 
 func _replace_tiles() -> void:
@@ -16,5 +14,5 @@ func _replace_tiles() -> void:
 		add_child(tile)
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
-func _process(delta):
+func _process(_delta):
 	pass
