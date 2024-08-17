@@ -1,15 +1,28 @@
-[gd_resource type="Resource" script_class="EntityDefinition" load_steps=4 format=3 uid="uid://b0q1548cnpqcu"]
+[gd_resource type="Resource" script_class="EntityDefinition" load_steps=7 format=3 uid="uid://b0q1548cnpqcu"]
 
+[ext_resource type="Script" path="res://src/Entities/Actors/Actions/Components/ComponentDefinitions/fighter_component_definition.gd" id="1_8n5gh"]
 [ext_resource type="Script" path="res://src/Entities/entity_definition.gd" id="1_ac5se"]
+[ext_resource type="Texture2D" uid="uid://dymjyl0tpkhk2" path="res://src/Assets/default_death_texture.tres" id="1_xxxdw"]
 [ext_resource type="Texture2D" uid="uid://brdt023pe3etb" path="res://src/Assets/monochrome_packed.png" id="2_kyp4a"]
+
+[sub_resource type="Resource" id="Resource_e1rhc"]
+script = ExtResource("1_8n5gh")
+max_hp = 1
+power = 5
+defense = 0
+death_texture = ExtResource("1_xxxdw")
+death_color = Color(0.545098, 0, 0, 1)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_taxky"]
 atlas = ExtResource("2_kyp4a")
-region = Rect2(432, 64, 16, 16)
+region = Rect2(448, 0, 16, 16)
 
 [resource]
 script = ExtResource("1_ac5se")
 name = "Player"
 texture = SubResource("AtlasTexture_taxky")
-color = Color(1, 1, 1, 1)
+color = null
 is_blocking_movement = false
+type = 2
+fighter_definition = SubResource("Resource_e1rhc")
+ai_type = 1

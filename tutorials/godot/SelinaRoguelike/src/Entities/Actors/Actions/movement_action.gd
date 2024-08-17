@@ -2,14 +2,13 @@ class_name MovementAction
 extends ActionWithDirection
 
 
-func perform(game: Game, entity: Entity) -> void:
-	var destination: Vector2i = entity.grid_position + offset
+func perform() -> void:
 	
-	var map_data: MapData = game.get_map_data()
-	var destination_tile: Tile = map_data.get_tile(destination)
+	var map_data: MapData = get_map_data()
+	var destination_tile: Tile = map_data.get_tile(get_destination())
 	if not destination_tile or not destination_tile.is_walkable():
 		return
-	if game.get_map_data().get_blocking_entity_at_locaion(destination):
+	if get_blocking_entity_at_destination():
 		return
 	entity.move(offset)
 	
