@@ -9,7 +9,7 @@
 script = ExtResource("1_8n5gh")
 max_hp = 30
 power = 5
-defense = 2
+defense = null
 death_texture = ExtResource("1_xxxdw")
 death_color = Color(0.545098, 0, 0, 1)
 
