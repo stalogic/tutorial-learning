@@ -7,11 +7,11 @@ func perform() -> void:
 	var target: Entity = get_map_data().player
 	var target_grid_position: Vector2i = target.grid_position
 	var offset: Vector2i = target_grid_position - entity.grid_position
-	var distance: int = abs(offset.x) + abs(offset.y)
-	
+	var distance: int = max(abs(offset.x), abs(offset.y))
+
 	if get_map_data().get_tile(entity.grid_position).is_in_view:
 		if distance <= 1:
-			return MeleeAction.new(entity, offset.x, offset.y)
+			return MeleeAction.new(entity, offset.x, offset.y).perform()
 			
 		path = get_point_path_to(target_grid_position)
 		path.pop_front()

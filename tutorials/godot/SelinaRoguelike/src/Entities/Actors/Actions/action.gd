@@ -3,8 +3,8 @@ extends RefCounted
 
 var entity: Entity
 
-func _init(entity: Entity) -> void:
-	self.entity = entity
+func _init(entity_: Entity) -> void:
+	self.entity = entity_
 
 func perform() -> void:
 	pass

@@ -7,9 +7,9 @@
 
 [sub_resource type="Resource" id="Resource_e1rhc"]
 script = ExtResource("1_8n5gh")
-max_hp = 1
+max_hp = 30
 power = 5
-defense = 0
+defense = 2
 death_texture = ExtResource("1_xxxdw")
 death_color = Color(0.545098, 0, 0, 1)
 

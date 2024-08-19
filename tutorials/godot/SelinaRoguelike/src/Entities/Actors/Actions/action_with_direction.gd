@@ -3,8 +3,8 @@ extends Action
 
 var offset: Vector2i
 
-func _init(entity: Entity, dx: int, dy: int) -> void:
-	super._init(entity)
+func _init(entity_: Entity, dx: int, dy: int) -> void:
+	super._init(entity_)
 	offset = Vector2i(dx, dy)
 	
 func perform() -> void:

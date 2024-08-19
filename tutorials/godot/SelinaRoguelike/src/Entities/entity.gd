@@ -39,10 +39,10 @@ func _set_entity_type(entity_definition: EntityDefinition) -> void:
 		fighter_component = FighterComponent.new(entity_definition.fighter_definition)
 		add_child(fighter_component)
 
-func _init(map_data: MapData, start_position: Vector2i, entity_definition: EntityDefinition) -> void:
+func _init(map_data_: MapData, start_position: Vector2i, entity_definition: EntityDefinition) -> void:
 	centered = false
 	grid_position = start_position
-	self.map_data = map_data
+	self.map_data = map_data_
 	_set_entity_type(entity_definition)
 	
 func is_blocking_movement() -> bool:
