@@ -46,3 +46,64 @@ improvement over the native implementation of a commercial tool.
 
 ### 成熟度
 在19个商业设计方案中都取得不错的优化效果，但是没有找个开源代码，也未集成进现有EDA工具中。
+
+----
+
+## A graph placement methodology for fast chip design
+
+### Abstract
+* 背景：
+芯片布局规划是一项复杂的工程任务，涉及设计计算机芯片的物理布局。尽管经过数十年的研究，这一过程仍然难以自动化，通常需要物理设计工程师数月的努力才能生成可制造的布局。
+
+* 目标：
+提出一种深度强化学习方法来解决芯片布局规划问题，旨在自动生成高质量的芯片布局，同时节省时间和人力资源。
+
+* 效果：
+  1. 在不到六个小时内，方法能够自动生成在所有关键指标上都优于或相当于人工生成的芯片布局，包括功耗、性能和芯片面积。
+  2. 通过学习芯片的丰富且可迁移的表示，方法能够利用过去的经验，在解决新问题实例时变得更好、更快。
+  3. 该方法已被用于设计谷歌下一代的人工智能（AI）加速器，并且有可能为每一代新产品节省数千小时的人力。
+
+---
+
+### Chip floorplanning as a learning problem
+
+![Overview of our method and training regimen](img/Mirhoseini_NATURE_2021_fig_1.png)
+
+在每次迭代中，强化学习智能体（策略网络）依次放置宏单元。一旦所有宏单元放置完毕，我们使用一种基于力的方法11,25–27来近似放置标准单元簇。在每次迭代的末尾，奖励计算为近似线长、拥塞和密度的线性组合（公式2）。在我们的实验中，拥塞权重λ设置为0.01，密度权重γ设置为0.01，最大密度阈值设置为0.6
+
+**公式2**
+
+$ R_{p, g} = -Wirelength(p, g) - \lambda \cdot Congestion(p, g) - \gamma \cdot Density(p, g) $
+
+其中g表示一个芯片设计方案的网表，p表示这个网表的一种放置方案。RL算法使用PPO。
+
+### Designing domain-adaptive policies
+
+使用Edge-GNN对网表进行预处理，使用下面的公式计算边和节点的embedding表示。
+
+$ e_{ij} = fc_e (concat(v_i, v_j | w_{ij}^e)) $
+
+$ v_i = mean_{j\in Neighbor(v_i)} (e_{ij})$
+
+![Policy and value network architecture](img/Mirhoseini_NATURE_2021_fig_2.png)
+
++ **资源**： 我们的方法在预训练时使用了与训练数据集块数相同的工作进程，预训练需要48小时。微调时，使用16个工作进程，最多6小时。每个工作进程包含一个Nvidia Volta GPU和10个CPU（每个2GB RAM）。在零样本模式下，单个GPU上不到一秒生成布局。
+
+---
+
+### 实验结果
+
+在给定的底层工艺技术节点的约束下，如果WNS（最坏负时序松弛）显著高于150 ps，或者水平或垂直拥塞超过1%，那么在设计流程的后期阶段，布局将无法满足时序约束，导致许多RePlAce布局（如块1、2、3）变得不可用。
+
+![Comparisons against baselines](img/Mirhoseini_NATURE_2021_table_1.png)
+
+> TNS为什么会小于WNS???
+
+![Training from scratch versus fine-tuning for varying amounts of time](img/Mirhoseini_NATURE_2021_fig_3.png)
+
+> Zero-shot表示直接使用训练好的模型，不进行任何微调，scratch 表示重头开始训练，其他两个表示在预训练模型的基础上进行不同时间的微调。
+> 实验结果表明，微调12小时模型总是优于从头训练。
+
+![Convergence plots on Ariane RISC-V CPU](img/Mirhoseini_NATURE_2021_fig_4.png)
+
+> 微调模型相比重头训练，不仅起步效果好，训练（微调）时间也更短。
