@@ -1,6 +1,8 @@
 class_name Game
 extends Node2D
 
+signal player_created(player)
+
 const player_definition: EntityDefinition = preload("res://src/Assets/Definnitions/Entities/Actors/entity_definition_player.tres")
 
 @onready var player: Entity
@@ -16,11 +18,16 @@ func _handle_enemy_turns() -> void:
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	player = Entity.new(null, Vector2i.ZERO, player_definition)
+	player_created.emit(player)
 	var camera: Camera2D = $Camera2D
 	remove_child(camera)
 	player.add_child(camera)
 	map.generate(player)
 	map.update_fov(player.grid_position)
+	MessageLog.send_message.bind(
+		"Hello and welcome, adventurer, to yet another dungeon!",
+		GameColors.WELCOME_TEXT
+	).call_deferred()
 
 func _physics_process(_delta: float) -> void:
 	var action: Action = input_handler.get_action(player)
