@@ -18,5 +18,5 @@ func _init(msg_text: String, foreground_color: Color) -> void:
 	
 func full_text() -> String:
 	if count > 1:
-		return "%s (x%d)" % [plain_text, text]
+		return "%s (x%d)" % [plain_text, count]
 	return plain_text
