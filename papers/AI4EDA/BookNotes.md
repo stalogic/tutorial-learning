@@ -185,3 +185,24 @@ $ v_i = mean_{j\in Neighbor(v_i)} (e_{ij})$
 研究评估了多种AI芯片布局算法，发现现有算法优化MacroHPWL并不能有效优化线长，而HPWL则是一个有效的线长近似指标。此外，MacroHPWL与芯片最终PPA指标（如WNS/TNS、拥塞、面积和功率）的相关性较弱，表明优化MacroHPWL对PPA影响有限。因此，需要更合适的中间指标来更好地反映实际的PPA目标。
 
 ![Correlation Between Metrics](img/ZhihaiWang2024_fig_3.png)
+
+## ChiPFormer: Transferable Chip Placement via Offline Decision Transformer
+
+### Abstract
+ChiPFormer是一种离线强化学习（RL）方法，用于芯片布局。它通过分析固定的离线数据学习可迁移的布局策略，具有高效的多任务学习能力和快速微调未见芯片电路的能力。实验显示，ChiPFormer在保持高布局质量的同时，将运行时间缩短了10倍，优于现有方法。 [相关资料](https://sites.google.com/view/chipformer/home)
+
+
+### Introduction
+
++ **背景**：
+芯片布局是现代芯片设计中的关键步骤，它决定了芯片的性能。随着集成电路规模的扩大，布局问题变得复杂且计算昂贵。
+
++ **问题**：
+现有的RL方法在布局质量上优于传统方法，但存在训练时间过长和迁移能力低的问题。
+
++ **解决方法**：
+ChiPFormer是一种离线RL方法，使用预先收集的数据进行训练，避免了耗时的在线回溯，并允许数据在多个布局任务中重用。
+
++ **创新**：1.离线RL范式，提高训练效率。2.多任务学习，快速迁移策略到新电路。3.转换器架构，有效学习复杂布局模式。通过这些创新，ChiPFormer在提高布局质量的同时，显著减少了运行时间，使其在实际芯片设计中更具实用性。
+
+![Circuit token generation (left) and ChiPFormer architecture (right)](img/YaoLai_ICML_2023_fig_3.png)
