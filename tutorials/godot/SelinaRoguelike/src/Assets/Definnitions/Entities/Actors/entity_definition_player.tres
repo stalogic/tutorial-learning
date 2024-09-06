@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="EntityDefinition" load_steps=7 format=3 uid="uid://b0q1548cnpqcu"]
 
-[ext_resource type="Script" path="res://src/Entities/Actors/Actions/Components/ComponentDefinitions/fighter_component_definition.gd" id="1_8n5gh"]
+[ext_resource type="Script" path="res://src/Entities/Actors/Components/ComponentDefinitions/fighter_component_definition.gd" id="1_8n5gh"]
 [ext_resource type="Script" path="res://src/Entities/entity_definition.gd" id="1_ac5se"]
 [ext_resource type="Texture2D" uid="uid://dymjyl0tpkhk2" path="res://src/Assets/default_death_texture.tres" id="1_xxxdw"]
 [ext_resource type="Texture2D" uid="uid://brdt023pe3etb" path="res://src/Assets/monochrome_packed.png" id="2_kyp4a"]
@@ -21,8 +21,9 @@ region = Rect2(448, 0, 16, 16)
 script = ExtResource("1_ac5se")
 name = "Player"
 texture = SubResource("AtlasTexture_taxky")
-color = null
+color = Color(1, 1, 1, 1)
 is_blocking_movement = false
 type = 2
 fighter_definition = SubResource("Resource_e1rhc")
 ai_type = 1
+inventory_capacity = 26

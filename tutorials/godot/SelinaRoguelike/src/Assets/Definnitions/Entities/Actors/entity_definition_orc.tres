@@ -2,7 +2,7 @@
 
 [ext_resource type="Texture2D" uid="uid://dymjyl0tpkhk2" path="res://src/Assets/default_death_texture.tres" id="1_upeck"]
 [ext_resource type="Script" path="res://src/Entities/entity_definition.gd" id="1_vgguh"]
-[ext_resource type="Script" path="res://src/Entities/Actors/Actions/Components/ComponentDefinitions/fighter_component_definition.gd" id="1_xy2i4"]
+[ext_resource type="Script" path="res://src/Entities/Actors/Components/ComponentDefinitions/fighter_component_definition.gd" id="1_xy2i4"]
 [ext_resource type="Texture2D" uid="uid://brdt023pe3etb" path="res://src/Assets/monochrome_packed.png" id="2_vnpq7"]
 
 [sub_resource type="Resource" id="Resource_gj1oy"]

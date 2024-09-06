@@ -7,8 +7,8 @@ func _init(entity_: Entity, dx: int, dy: int) -> void:
 	super._init(entity_)
 	offset = Vector2i(dx, dy)
 	
-func perform() -> void:
-	pass
+func perform() -> bool:
+	return false
 
 func get_destination() -> Vector2i:
 	return entity.grid_position + offset
