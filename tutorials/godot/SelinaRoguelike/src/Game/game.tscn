@@ -1,4 +1,4 @@
-[gd_scene load_steps=20 format=3 uid="uid://12qtvtwi6sqw"]
+[gd_scene load_steps=21 format=3 uid="uid://12qtvtwi6sqw"]
 
 [ext_resource type="Script" path="res://src/Game/game.gd" id="1_kuvog"]
 [ext_resource type="Script" path="res://src/Game/EventHandlers/input_handler.gd" id="2_vqrpc"]
@@ -8,6 +8,7 @@
 [ext_resource type="Script" path="res://src/Map/dungeon_generator.gd" id="4_aa02p"]
 [ext_resource type="Script" path="res://src/Game/EventHandlers/history_viewer_input_handler.gd" id="5_1pbao"]
 [ext_resource type="Script" path="res://src/Map/fdield_of_view.gd" id="5_hnsxa"]
+[ext_resource type="Script" path="res://src/Game/EventHandlers/base_input_handler.gd" id="6_c3sqa"]
 [ext_resource type="Texture2D" uid="uid://brdt023pe3etb" path="res://src/Assets/monochrome_packed.png" id="8_ujsqs"]
 [ext_resource type="FontFile" uid="uid://cx6rr8pffwgky" path="res://src/Assets/fonts/kenney_kenney-fonts/Fonts/Kenney Pixel.ttf" id="9_5r10w"]
 [ext_resource type="Script" path="res://src/GUI/hp_display.gd" id="9_f3p7k"]
@@ -85,6 +86,9 @@ script = ExtResource("3_dyc1a")
 script = ExtResource("5_1pbao")
 message_panel_path = NodePath("../../../../../InfoBar/MessagePanel")
 message_log_path = NodePath("../../../../../InfoBar/MessagePanel/MessageLog")
+
+[node name="DummyInputHandler" type="Node" parent="VBoxContainer/SubViewportContainer/SubViewport/Game/InputHandler"]
+script = ExtResource("6_c3sqa")
 
 [node name="Map" type="Node2D" parent="VBoxContainer/SubViewportContainer/SubViewport/Game"]
 script = ExtResource("3_poy7v")
