@@ -3,6 +3,7 @@ extends ConsumableComponent
 
 var amount: int
 
+
 func _init(definition: HealingConsumableComponentDefinition) -> void:
 	amount = definition.healing_amount
 	
@@ -17,5 +18,5 @@ func activate(action: ItemAction) -> bool:
 		)
 		consume(consumer)
 		return true
-	MessageLog.send_message("You health is already full.", GameColors.IMPOSSIBLE)
+	MessageLog.send_message("Your health is already full.", GameColors.IMPOSSIBLE)
 	return false

@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="EntityDefinition" load_steps=6 format=3 uid="uid://bpw1y0ygdksi8"]
+
+[ext_resource type="Script" path="res://src/Entities/entity_definition.gd" id="1_42vgr"]
+[ext_resource type="Script" path="res://src/Entities/Actors/Components/ComponentDefinitions/lighting_damage_consumable_component_definition.gd" id="1_ihdm6"]
+[ext_resource type="Texture2D" uid="uid://brdt023pe3etb" path="res://src/Assets/monochrome_packed.png" id="3_8nowa"]
+
+[sub_resource type="Resource" id="Resource_vy2us"]
+script = ExtResource("1_ihdm6")
+damage = 20
+maximum_range = 5
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_pcp3p"]
+atlas = ExtResource("3_8nowa")
+region = Rect2(464, 176, 16, 16)
+
+[resource]
+script = ExtResource("1_42vgr")
+name = "火焰卷轴"
+texture = SubResource("AtlasTexture_pcp3p")
+color = Color(1, 0.413504, 0.344847, 1)
+is_blocking_movement = false
+type = 1
+ai_type = 0
+consumable_definition = SubResource("Resource_vy2us")
+inventory_capacity = 0

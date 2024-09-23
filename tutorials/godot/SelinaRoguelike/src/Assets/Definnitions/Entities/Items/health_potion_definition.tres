@@ -4,9 +4,9 @@
 [ext_resource type="Script" path="res://src/Entities/entity_definition.gd" id="1_s536i"]
 [ext_resource type="Texture2D" uid="uid://brdt023pe3etb" path="res://src/Assets/monochrome_packed.png" id="3_i8ehs"]
 
-[sub_resource type="Resource" id="Resource_3u74e"]
+[sub_resource type="Resource" id="Resource_feoi3"]
 script = ExtResource("1_a3mi8")
-healing_amount = 0
+healing_amount = 10
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_jrmp3"]
 atlas = ExtResource("3_i8ehs")
@@ -20,5 +20,5 @@ color = Color(0.498039, 0, 1, 1)
 is_blocking_movement = false
 type = 1
 ai_type = 0
-consumable_definition = SubResource("Resource_3u74e")
-inventory_capacity = 4
+consumable_definition = SubResource("Resource_feoi3")
+inventory_capacity = 26
