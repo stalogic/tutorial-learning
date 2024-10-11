@@ -139,3 +139,69 @@ $$
 L_{\mathrm{DPO}}\left(\pi_{\theta}\right)=-\mathbb{E}_{\left(x, y_{w}, y_{l}\right) \sim D} \log P_{\theta}\left(y_{w}>y_{l} \mid x\right)=-\mathbb{E}_{\left(x, y_{w}, y_{l}\right) \sim D} \log \left\{\sigma\left[\beta \log \left(\frac{\pi_{\theta}\left(y_{w} \mid x\right)}{\pi_{\mathrm{ref}}\left(y_{w} \mid x\right)}\right)-\beta \log \left(\frac{\pi_{\theta}\left(y_{l} \mid x\right)}{\pi_{\mathrm{ref}}\left(y_{l} \mid x\right)}\right)\right]\right\}
 $$
 DPO（Direct Preference Optimization）在OpenAI的RLHF方法中存在一些局限性。RLHF方法中的奖励模型保持不变，便于人类对齐。对于相关任务的进一步训练，只需要新的提示，由LLM生成响应，并从现有的奖励模型中获得奖励。这种方法在灵活性和可重用性方面具有显著优势。相比之下，DPO需要新的偏好数据来进行进一步优化，这可能很难获得，因为它需要细致的人工标注。DPO的损失函数专注于最大化期望响应和非期望响应之间的差异，可能会导致无意中减少期望响应的奖励或增加非期望响应的奖励。最近的研究表明，DPO对基本模型输出和偏好数据之间的分布偏移特别敏感，可能导致性能不佳。为了解决这个问题，提出了迭代DPO，其中使用最新的策略模型生成新的响应，并在每次迭代中使用批评进行偏好标记。这种方法可以帮助缓解分布偏移问题，并可能提高DPO的性能。最后，DPO论文中的测试主要是在简单的情况下进行的，应该评估更复杂的下游NLP任务来评估DPO的有效性。
+
+
+##### 3.3.4 DPOP:Smaug
+
+论文总结了DPO损失函数的局限性，特别是在处理小编辑距离数据时的不足。作者通过理论分析指出，DPO可能导致期望和非期望响应的奖励同时增加或减少，只要它们之间的差异增大。为了解决这一问题，作者创建了三个包含更多小编辑距离示例的数据集，并提出了DPO-positive（DPOP）损失函数。DPOP通过引入一个新项，激励模型在标准DPO损失的基础上，提高对期望响应的生成概率，从而有效防止期望响应奖励的减少。
+
+$$
+L_{\mathrm{DPOP}}\left(\pi_{\theta}\right)=-\mathbb{E}_{\left(x, y_{w}, y_{l}\right) \sim D}\left\{\log \left[\sigma\left(\beta \log \left(\frac{\pi_{\theta}\left(y_{w} \mid x\right)}{\pi_{\mathrm{ref}}\left(y_{w} \mid x\right)}\right)-\beta \log \left(\frac{\pi_{\theta}\left(y_{l} \mid x\right)}{\pi_{\mathrm{ref}}\left(y_{l} \mid x\right)}\right)\right)\right]-\lambda \max \left(0, \log \left(\frac{\pi_{\mathrm{ref}}\left(y_{w} \mid x\right)}{\pi_{\theta}\left(y_{w} \mid x\right)}\right)\right)\right\}
+$$
+
+利用改进的损失函数，作者训练并评估了不同规模的Smaug模型，在Huggingface LLM排行榜和MTBench上取得了优异表现，其中70B规模的模型在论文发表时达到了state-of-the-art水平。
+
+##### 3.3.5 $\beta$-DPO
+
+问题：
+- DPO损失函数的性能对偏好数据质量下的权衡参数β的微调非常敏感。
+- 最优的β值会随着偏好数据质量的变化而变化，需要动态调整。
+- 现实世界的数据集中可能包含异常值，这些异常值会扭曲优化过程。
+
+改进：
+1. 动态β校准：引入了批次级别的动态β校准，根据成对数据的质量为每个批次调整β。
+2. β引导的数据过滤：通过基于奖励差异的概率模型过滤掉异常值，以减轻它们对优化过程的影响。
+
+效果：
+- 在不同的模型大小和采样温度下，β-DPO在Anthropic HH和Reddit TL;DR摘要任务上始终优于标准DPO。
+- 在Anthropic HH数据集上，β-DPO在包括Pythia-410M、1.4B和2.8B在内的各种大小的模型上实现了超过10%的改进。
+- 对于低差距数据，较高的β会降低胜率，而对于高差距数据，增加β会提高性能，这表明了根据数据质量调整β值的重要性。
+
+未来工作：
+- 探索β-DPO在自博弈场景中的应用。
+- 开发更复杂的评估指标来更全面地衡量模型性能。
+- 研究β-DPO在超大型模型上的可扩展性。
+- 追求自动化的参数调整方法，以简化模型优化过程。
+
+
+##### 3.3.6 IPO
+问题：
+1. RLHF和DPO存在过拟合问题。
+2. 在确定性条件下，使用BT模型将成对偏好替换为点奖励模型时，可能导致过拟合。
+
+$$
+L_{\mathrm{IPO}}\left(\pi_{\theta}\right)=-\mathbb{E}_{\left(x, y_{w}, y_{l}\right) \sim D}\left[\log \left(\frac{\pi_{\theta}\left(y_{w} \mid x\right)}{\pi_{\mathrm{ref}}\left(y_{w} \mid x\right)}\right)-\log \left(\frac{\pi_{\theta}\left(y_{l} \mid x\right)}{\pi_{\mathrm{ref}}\left(y_{l} \mid x\right)}\right)-\frac{1}{2 \beta}\right]^{2}
+$$
+
+改进措施：
+1. 引入IPO（Identity Preference Optimization）作为解决方案。
+2. 提出了一种新的目标函数，避免了通过BT模型基于点奖励进行偏好转换，而是专注于优化偏好的非线性函数。
+3. 提出了一个新的损失函数，可以避免BT模型将点奖励转换为偏好概率。
+
+效果：
+1. 当惩罚系数β足够大时，IPO成功地避免了过拟合，而DPO倾向于过拟合。
+2. 通过添加噪声修改的DPO预计可以充分解决这个问题。
+3. 进一步的实验需要在下游NLP任务中验证IPO方法的优势。
+
+
+##### 3.3.7 sDPO 
+
+在DPO（决策过程优化）中，参考模型对于保持SFT（监督微调）和下游任务的性能至关重要。sDPO方法通过逐步对齐偏好数据集，提高了DPO训练效果。实验表明，sDPO在ARC、HellaSWAG、MMLU和TruthfulQA任务上得分超过了传统的DPO方法。使用更新参考模型初始化目标模型可以降低初始损失函数，提高训练效率。然而，对于生成任务的影响尚不明确，需要进一步实验来探讨。
+
+
+##### 3.3.8 GPO
+作者提出了一种广义偏好优化（GPO）方法，旨在通过最大化期望响应与负面响应之间的差异来改进模型的性能。在GPO中，作者使用了泰勒展开来分析偏好优化的效果，并将此过程分为两部分：偏好优化和离线正则化。偏好优化关注于最大化响应差异，类似于奖励机制；而离线正则化则致力于最小化当前策略与参考策略之间的差异，类似于KL散度。
+
+
+#### 3.4 Token-level DPO
+DPO将奖励赋予提示和响应的整体，而MDP为每个动作分配奖励。后续研究细化了DPO在Token-level的应用。
