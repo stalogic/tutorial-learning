@@ -205,3 +205,77 @@ $$
 
 #### 3.4 Token-level DPO
 DPO将奖励赋予提示和响应的整体，而MDP为每个动作分配奖励。后续研究细化了DPO在Token-level的应用。
+
+
+##### 3.4.1 DPO:from r to Q
+DPO最初被视为一个多臂赌博机问题，而不是基于token的MDP。本文表明DPO能进行基于token的信用分配。在基于token的MDP中，M = (S, A, f, r, ρ0)，S是状态空间，A是动作空间，f(s|a)描述状态转换，r是奖励函数，ρ0是初始状态分布。在强化学习的最大熵设定下，DPO被重新定义为基于token的MDP，每个token生成都有奖励$\beta \log \left(\frac{\pi_{\theta}\left(a_{t} \mid s_{t}\right)}{\pi_{\operatorname{ref}}\left(a_{t} \mid s_{t}\right)}\right)$
+。
+$$
+P_{\theta}\left(y_{w}>y_{l}\right)=\sigma\left[\sum_{t=0}^{N-1} \beta \log \left(\frac{\pi_{\theta}\left(a_{t}^{w} \mid s_{t}^{w}\right)}{\pi_{\mathrm{ref}}\left(a_{t}^{w} \mid s_{t}^{w}\right)}\right)-\sum_{t=0}^{M-1} \beta \log \left(\frac{\pi_{\theta}\left(a_{t}^{l} \mid s_{t}^{l}\right)}{\pi_{\text {ref }}\left(a_{t}^{l} \mid s_{t}^{l}\right)}\right)\right]
+$$
+实验证明DPO在基于token的MDP中有效，能识别LLM响应中的错误，并通过波束搜索生成更高质量的响应。使用SFT微调的模型作为参考模型时，DPO在最大熵RL中的隐含奖励会减少。
+
+
+##### 3.4.2 TDPO
+作者发现DPO过程中，LLM的生成多样性下降，与偏好响应相比，不偏好响应的KL散度增长更快。为此，他们提出了基于token的DPO（TDPO）来解决这些问题[18]。在原始的DPO中，应用了反向KL散度，而在基于token的DPO中，应用了顺序前向KL散度。最后，作者建议停止传播yw的梯度以进一步提高TDPO的性能。
+$$
+\pi_{\theta}^{*}(y \mid x)=\max _{\pi_{\theta}} \mathbb{E}_{x, y^{<t} \sim D}\left[\mathbb{E}_{y^{t} \sim \pi_{\theta}\left(y^{t} \mid\left[x, y^{<t}\right]\right)} A_{\theta}\left(\left[x, y^{<t}\right], y^{t}\right)-\beta D_{\mathrm{KL}}\left(\pi_{\theta}\left(y^{t} \mid\left[x, y^{<t}\right]\right) \| \pi_{\text {ref }}\left(y^{t} \mid\left[x, y^{<t}\right]\right)\right)\right]
+$$
+
+$$
+Q_{\theta}\left(\left[x, y^{<t}\right], y^{t}\right)=\beta \log \left(\frac{\pi_{\theta}\left(y^{t} \mid\left[x, y^{<t}\right]\right)}{\pi_{\text {ref }}\left(y^{t} \mid\left[x, y^{<t}\right]\right)}\right)+\beta \log \left(Z\left(\left[x, y^{<t}\right]\right)\right)
+$$
+在实验中，作者使用GPT-2 Large [67]作为基础模型，并在IMDB [54]、Anthropic HH [3]和MT-bench [58]数据集上进行评估。他们的实验表明，TDPO，特别是带有停止梯度的TDPO，优于DPO。
+
+
+#### 3.5 Iterative/Online DPO
+DPO使用所有可用偏好数据集来对齐LLM。为了持续改进LLM，需要迭代/在线DPO，这提出了如何高效收集新偏好数据集的问题。两篇论文研究了这个问题。
+
+##### 3.5.1 Iterative/Online DPO: Self-Rewarding Language Models
+DPO在获取新的人类偏好数据方面面临挑战，且成本高昂。迭代/在线DPO利用LLM生成和评估响应，类似于人类标注。作者提出使用LLM作为评估响应的裁判，并开发一个在训练过程中处理所有所需能力的智能体。在实验中，LLM在不同任务上的性能随着迭代次数的增加而提高，尤其是在稳定性方面。然而，随着迭代次数的增加，NLP基准测试的性能下降，这可能是由于过拟合。评估奖励模型发现，大多数指标随着迭代次数的增加而提高，这进一步强调了确定迭代/在线DPO最佳终止点的重要性。
+
+##### 3.5.2 Iterative/Online DPO: CRINGE
+为了改进语言模型，使其更符合人类偏好，研究人员引入了CRINGE损失。这种损失函数利用二进制反馈来调整模型输出，通过惩罚负面响应和奖励正面响应来优化模型。此外，还提出了成对CRINGE损失，它使用门控函数来控制损失，并根据两个响应的相对质量来改进模型响应。实验结果表明，成对CRINGE损失在减少重复和提高生成质量方面表现优异，优于其他方法如二进制CRINGE、PPO和DPO。
+
+
+#### 3.6 Binary Feedback
+收集偏好反馈比收集“点赞”和“点踩”等二元反馈更具挑战性，这有助于调整过程规模的扩大。随后进行的研究KTO和DRO专注于利用二元反馈来调整LLMs。
+
+##### 3.6.1 KTO
+问题：如何改进大型语言模型（LLMs）的对齐任务，使其更有效地学习人类偏好？
+
+改进：作者提出使用二进制反馈（好/坏）来替代复杂的偏好反馈，并借鉴Kahneman和Tversky的前景理论，引入人类感知损失（HALOs）来增强模型对人类决策行为的理解。
+
+原理：HALOs基于前景理论，通过修改效用函数来反映人类对损失和收益的不同感知。模型使用一个更新的参考点z0，该点是通过所有提示及其响应的平均奖励估计的。损失函数考虑了期望和不需要的响应，并通过KL散度来简化参考点。
+
+效果：在多个下游任务中，HALOs显著提升了模型性能，尤其是在GSM8K任务中。此外，通过调整λDnD/λUnU的比例，模型能够更有效地处理数据不平衡问题，最优范围为1到4/3。
+
+##### 3.6.2 DRO
+问题：传统的对齐技术如DPO依赖于稀缺的成对偏好数据，这限制了其在实际应用中的可行性。
+
+改进：DRO通过直接优化策略，而不是学习单独的奖励模型，来利用更易获取的单轨迹反馈数据。DRO-V通过结合离线策略学习和价值函数学习来改进这一方法。
+
+优点：
+1. 直接优化策略，无需单独的奖励模型。
+2. 利用更丰富的单轨迹数据，而不是稀缺的成对偏好数据。
+3. 具有独特的全局最优解，可以独立优化策略和价值函数。
+4. 简单且理论上有原则的方法，没有强烈的假设。
+
+效果：DRO-V在UltraFeedback数据集上的表现优于之前的KTO方法，并且对学习率的变化具有鲁棒性。默认正则化参数β = 1.0效果良好。
+
+#### 3.7 Merge SFT and Alignment
+过去的研究通常先进行监督微调，再进行对齐，这种方法既费时又容易导致模型忘记之前学到的知识。后来的研究尝试将这两个步骤结合或并行进行，以改善效率和学习效果。
+
+##### 3.7.1 ORPO
+ORPO（Odds Ratio Preference Optimization）方法将SFT（监督微调）和对齐过程结合为单一步骤，避免了参考模型的依赖。虽然ORPO在Anthropic HH数据集上展示了良好的效果，但在某些情况下，如只有yw存在的SFT数据集，其效果不如DPO（Direct Preference Optimization）。
+$$
+L_{\mathrm{ORPO}}=\mathbb{E}_{\left(x, y_{w}, y_{l}\right) \sim D}\left\{L_{\mathrm{SFT}}+\lambda\left[-\log \left(\sigma\left(O R_{\theta}\left(x, y_{w}, y_{l}\right)\right)\right)\right)\right]
+$$
+
+##### 3.7.2 PAFT
+PAFT是一种新的并行训练方法，旨在解决SFT和对齐训练中的灾难性遗忘问题。它同时进行SFT和DPO，然后将两者的模型合并，以保留两者的能力。通过应用SFT+l1范数，增加SFT模型的稀疏性，最后得到最终模型。在Huggingface排行榜的7B模型上，PAFT模型表现出色，优于其他方法。
+
+#### 3.8 Length Control DPO and Reference Free DPO
+研究显示，LLMs输出常过长。R-DPO和SimPO致力于在不损害性能的前提下，生成长度可控的响应。DPO需要参考策略以保持对齐模型与参考模型的一致性。SimPO和RLOO则提出无需参考模型的新方法，同时保持LLMs的有效性。
+
+##### 3.8.1 R-DPO
