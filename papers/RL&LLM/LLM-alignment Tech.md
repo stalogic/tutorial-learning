@@ -279,3 +279,30 @@ PAFT是一种新的并行训练方法，旨在解决SFT和对齐训练中的灾�
 研究显示，LLMs输出常过长。R-DPO和SimPO致力于在不损害性能的前提下，生成长度可控的响应。DPO需要参考策略以保持对齐模型与参考模型的一致性。SimPO和RLOO则提出无需参考模型的新方法，同时保持LLMs的有效性。
 
 ##### 3.8.1 R-DPO
+$$
+\pi_{\theta}^{*}(y \mid x)=\max _{\pi_{\theta}} \mathbb{E}_{x \sim D}\left\{\mathbb{E}_{y \sim \pi_{\theta}(y \mid x)}\left[r_{\theta}(x, y)-\alpha|y|\right]-\beta D_{K L}\left(\pi_{\theta}(y \mid x) \| \pi_{\mathrm{ref}}(y \mid x)\right)\right\} \\
+r_{\theta}(x, y)=\beta \log \left(\frac{\pi_{\theta}(y \mid x)}{\pi_{\text {ref }}(y \mid x)}\right)+\beta \log Z(x)-\alpha|y| \\
+L_{\mathrm{R}-\mathrm{DPO}}\left(\pi_{\theta}\right)=-\mathbb{E}_{\left(x, y_{w}, y_{l}\right) \sim D}\left\{\log \left[\sigma\left(\beta \log \left(\frac{\pi_{\theta}\left(y_{w} \mid x\right)}{\pi_{\mathrm{ref}}\left(y_{w} \mid x\right)}\right)-\beta \log \left(\frac{\pi_{\theta}\left(y_{l} \mid x\right)}{\pi_{\mathrm{ref}}\left(y_{l} \mid x\right)}\right)-\left(\alpha\left|y_{w}\right|-\alpha\left|y_{l}\right|\right)\right)\right]\right\}
+$$
+问题：标准DPO会利用偏好数据中的冗余性偏见，导致输出冗长。
+
+改进：引入正则化DPO（R-DPO），将输出长度纳入RL目标函数，以减少冗余。
+
+效果：R-DPO在Anthropic RLHF HH数据集上提高了获胜率，但在Reddit TL;DR数据集上降低了获胜率。输出长度与KL散度之间的相关性较弱，调整参数β影响不大。DPO比R-DPO收敛更快，因为DPO利用了奖励模型的偏见，未能捕捉到更复杂的偏好特征。
+
+##### 3.8.2 SimPO
+研究指出，集成参考模型到DPO和RLHF中虽然有效，但过程复杂。SimPO简化了这一过程，不需要参考模型，且表现强劲。SimPO通过长度归一化策略和奖励边际γ，优化了响应生成。在基准测试中，SimPO优于DPO及其变体。然而，SimPO的奖励模型缺乏RL框架内的目标函数，且存在与原始对齐目标偏差的担忧。
+$$
+L_{\text{SimPO}}(\pi_\theta)=-\mathbb{E}_{(x,y_w,y_l)\sim D}\left\{\log\left[\sigma\left(\frac{\alpha}{|y_w|}\log\pi_\theta(y_w|x)-\frac{\alpha}{|y_l|}\log\pi_\theta(y_l|x)-\gamma\right)\right]\right\}
+$$
+
+##### 3.8.3 RLOO
+PPO是一种解决传统强化学习中高方差问题的算法，但在具有广泛预训练和SFT的LLMs中，方差问题可能不那么严重。
+因此，对于LLMs的对齐，PPO可能过于复杂。为此，研究者提出了RLOO算法，它使用多个策略样本为相同输入生成响应，并从中估计基线函数。
+这种方法简化了PPO，同时保持了性能。在Anthropic HH和TL;DR数据集上的实验表明，RLOO在噪声鲁棒性方面优于PPO和DPO，特别是在可以生成更多策略样本时。
+$$
+\pi_\theta^*(y|x)=\max_{\pi_\theta}\mathbb{E}_{x\sim D}\frac{1}{K}\sum_{i=1}^K\left[r_\theta(x,y_i)-\frac{1}{K-1}\sum_{j\neq i}r_\theta(x,y_j)\right]\nabla\log\pi_\theta(y_i|x)
+$$
+对每个prompt $x$，获取$K$个on-policy响应$y_i, i=1,2,\cdots, K$，RLOO优化过程中不需要使用参考模型$\pi_{ref}$
+
+#### 3.9 Listwise Preference Optimization
