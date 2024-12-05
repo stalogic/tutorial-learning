@@ -38,7 +38,7 @@
 ![The four subtopics of feedback](img/zhichao2024-fig3.png)
 
 ##### 2.2.1 Preference Feedback vs. Binary Feedback
-在RLHF论文中，收集了偏好反馈，即yw > yl。然而，后续工作如KTO和DRO表明，偏好反馈更难收集，收集二元反馈（如“点赞”或“点踩”）可能更有优势。
+在RLHF论文中，收集了偏好反馈，即$y_w > y_l$。然而，后续工作如KTO和DRO表明，偏好反馈更难收集，收集二元反馈（如“点赞”或“点踩”）可能更有优势。
 
 ##### 2.2.2 Pairwise Feedback vs. Listwise Feedback
 在RLHF中，列表反馈被收集，即将多个响应视为成对比较。但后续研究，如LiPO，建议将列表偏好视为排序问题，而不是多个成对比较，这可能是更有优势的方法。
@@ -305,4 +305,3 @@ $$
 $$
 对每个prompt $x$，获取$K$个on-policy响应$y_i, i=1,2,\cdots, K$，RLOO优化过程中不需要使用参考模型$\pi_{ref}$
 
-#### 3.9 Listwise Preference Optimization
